@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<script type="text/javascript" src="js/jquery.min.js" ></script>
+		<script type="text/javascript" src="js/utils.js" ></script>
+		<style>
+			.hide{
+				display: none;
+			}
+		</style>
+		<script>
+			var candidates;
+			var page_username;
+			var vote_cand;
+			
+			page_username = getParams("username");
+			function getAllCandidate(){
+				var jsonobj;
+				$.ajax({
+					type:"post",
+					url:"php/voteservice.php",
+					data:{action:"getAllCandidate"},
+					async:false,
+					success:function(res){
+						jsonobj = JSON.parse(res);
+					}
+				})
+				candidates = jsonobj.candidate;
+//				return can;
+			}
+			function checkVoteState(){
+				
+				$.ajax({
+					type:"post",
+					url:"php/voteservice.php",
+					data:{action:"checkVoteState",username:page_username},
+					async:true,
+					success:function(res){
+						var jsonobj = JSON.parse(res);
+						if(jsonobj.status==0){
+							//已投票
+							vote_cand = jsonobj.candidate;
+							$("#voted").removeClass("hide");
+							$("#vote_cand").html(vote_cand);
+						}else{
+							//未投票
+							vendorVotePage();
+							$("#not_voted").removeClass("hide");
+						}
+
+					}
+				})
+				
+			}	
+			function vendorVotePage(){
+				
+//				candidates=["can1","can2","can3"];
+				for(var i=0;i<candidates.length;i++){
+//					console.log(candidates[i]);
+					$("#voteTable").append('<tr><td><input type="radio" name="candidate" value="'+candidates[i]+'" >'+candidates[i]+'</input></td></tr>');
+				}
+				$("#voteTable").append('<tr><td><input type="button" id="voteForCandidate" value="投票" ></input></td></tr>');
+				$("#voteForCandidate").click(function(){
+					vote();
+				})
+			}
+			function vote(){
+				var val = $('input[name="candidate"]:checked').val();
+//				alert(val);
+				$.ajax({
+					type:"post",
+					data:{
+						action:"vote",
+						candidate:val
+					},
+					url:"php/voteservice.php",
+					async:true,
+					success:function(res){
+						var jsonobj = JSON.parse(res)
+						if(jsonobj.status == 0){
+							alert("投票成功")
+							location.reload();
+						}else if(jsonobj.status == 1){
+							alert("您已经为"+jsonobj.candidate+"投过票了，请勿重复投票");
+							location.reload();
+						}else if(jsonobj.status == 2){
+							alert(jsonobj.message);
+							window.open("index.html");
+						}
+					}
+				});
+			}
+			
+			
+			$(document).ready(function(){
+				getAllCandidate();
+				checkVoteState();
+				
+				
+			})
+		</script>
+	</head>
+	<body>
+		<div id="voted" class="hide">
+			您已经为<span id="vote_cand"></span>投过票。
+			
+		</div>
+		<!---->
+		<div id="not_voted" class="hide">
+			您还未投票，请选择候选人进行投票。
+			<table id="voteTable">
+				<!--<tr><td><input type="radio" name="candidate" value="candate1" ></input></td><td>candate1</td></tr>
+				<tr><td><input type="radio" name="candidate" value="candate2" ></input></td><td>candate2</td></tr>
+				<tr><td><input type="radio" name="candidate" value="candate3" ></input></td><td>candate3</td></tr>-->
+				
+			</table>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<style>
+			.hide{
+				display: none;
+			}
+		</style>
+		<script type="text/javascript" src="js/jquery.min.js" ></script>
+		<script>
+			function getVoteResult(){
+				$.ajax({
+					url:"php/phpvoteservice.php",
+					method:"post",
+					data:{action:"getResult"},
+					success:function(res){
+						var jsonobj = JSON.parse(res);
+						var num = jsonobj.length;
+						for(var i=0;i<num;i++){
+							$("#voteResult").append('<tr><td>'+jsonobj[i]["candidate"]+'</td><td>'+jsonobj[i]["number"]+'</td></tr>');
+						}
+						$("#voteResult").removeClass("hide");
+					}
+				})
+			}
+			function getVoteResult(){
+				$.ajax({
+					url:"php/voteservice.php",
+					method:"post",
+					data:{action:"getResult"},
+					success:function(res){
+						var jsonobj = JSON.parse(res);
+						var num = jsonobj.length;
+						for(var i=0;i<num;i++){
+							$("#voteResult").append('<tr><td>'+jsonobj[i]["candidate"]+'</td><td>'+jsonobj[i]["number"]+'</td></tr>');
+						}
+						$("#voteResult").removeClass("hide");
+					}
+				})
+			}
+			function getVoteDDetail(){
+				$.ajax({
+					url:"php/voteservice.php",
+					method:"post",
+					data:{action:"getDatil"},
+					success:function(res){
+						var jsonobj = JSON.parse(res);
+						var num = jsonobj.length;
+						for(var i=0;i<num;i++){
+							$("#voteDatil").append('<tr><td>'+jsonobj[i]["username"]+'</td><td>'+jsonobj[i]["candidate"]+'</td></tr>');
+						}
+						$("#voteDatil").removeClass("hide");
+					}
+				})
+			}
+			function resetVote(){
+				$("#resetVote").click(function(){
+					var reset_confirm = confirm("是否确认重置投票？");
+					if(reset_confirm == true){
+						$.ajax({
+							url:"php/voteservice.php",
+							method:"post",
+							data:{action:"resetVote"},
+							success:function(res){
+								var jsonobj = JSON.parse(res);
+								if(jsonobj.status == 0){
+									alert(jsonobj.message);
+								}else{
+									alert(jsonobj.message);
+								}
+							}
+						})
+					}
+				})
+			}
+			$(function(){
+				getVoteResult();
+				getVoteDDetail();
+				resetVote();
+			})
+		</script>
+	</head>
+	<body>
+		<table class="hide" id="voteResult" border="1" cellspacing="0" cellpadding="0">
+			<tr><th colspan="2">投票结果统计</th></tr>
+			<tr><td>候选人</td><td>票数</td></tr>
+			<!--<tr><td>candidate1</td><td>2</td></tr>
+			<tr><td>candidate2</td><td>3</td></tr>
+			<tr><td>candidate3</td><td>1</td></tr>-->
+		</table>
+		<table class="hide" id="voteDatil" border="1" cellspacing="0" cellpadding="0">
+			<tr><th colspan="2">投票详细信息</th></tr>
+			<tr><td>投票人</td><td>选票</td></tr>
+		</table>
+		<input type="button" id="resetVote" value="重置投票" />
+	</body>
+</html>
